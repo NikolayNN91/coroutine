@@ -13,10 +13,17 @@ import kotlin.coroutines.*
 
 class SuspendFunction {
 
-    suspend fun getMessage() : String {
-        delay(5000);
-        return "Hello world!"
-    }
+    val service: Service = Service()
+
+
+
+
+
+
+
+
+
+
 
     suspend fun demoContext() {
         println("2. Running in ${coroutineContext[CoroutineName]}")
@@ -37,13 +44,31 @@ class SuspendFunction {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
     fun base() = GlobalScope.launch { //(1)
         val job: Job = launch() { //(2)
-            val result = getStringA() //(3)
+            val result = getMessage() //(3)
             println("$result")
         }
         println("The result: ")
         job.join() //(4)
+    }
+
+    suspend fun getMessage() : String {
+        delay(1000);
+        return "Hello world!"
     }
 
 
@@ -330,9 +355,9 @@ class SuspendFunction {
 
 
 
-    //работа с сетевыми запросами с использованием библиотеки Retrofit
+    //работа с сетевыми запросами с использованием библиотеки Retrofit (cont: Continuation / cont: CancellableContinuation)
     suspend fun <T> Call<T>.await(): T = suspendCoroutine { cont ->
-        enqueue(object: Callback<T> {
+        this.enqueue(object: Callback<T> {
 
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 cont.resume(response.body()!!)
@@ -344,7 +369,15 @@ class SuspendFunction {
 
         })
 
+
     }
+
+    suspend fun getName(): String? {
+        return service.getName()?.await()
+    }
+
+
+
 
 
 

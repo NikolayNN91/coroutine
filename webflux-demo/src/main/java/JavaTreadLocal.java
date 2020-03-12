@@ -8,6 +8,30 @@ import java.util.Random;
 
 public class JavaTreadLocal {
 
+
+
+	public void base() {
+//		Mono
+//				.just(1)
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	//npe exception
 	public void demoThreadLocal() {
 
