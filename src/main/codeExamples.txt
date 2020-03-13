@@ -1,0 +1,145 @@
+val url = buildUrl()
+
+	// long synchronous function
+	download(url)
+
+	toast("File is downloaded")
+
+
+//-----------------------------------------
+
+
+	val url = buildUrl()
+
+	// long asynchronous function
+	download(url) {
+		toast("File is downloaded")
+	}
+
+
+//-----------------------------------------
+
+
+
+	launch {
+		val url = buildUrl()
+
+		download(url) //suspend function
+
+		toast("File is downloaded")
+	}
+
+
+//-----------------------------------------
+
+	class GeneratedContinuationClass extends SuspendLambda {
+		String url;
+
+		@Override
+		void invokeSuspend() {
+			url = buildUrl();
+
+			download(url); // suspend function
+
+			toast("File is downloaded: " + url);
+		}
+	}
+
+
+
+//-----------------------------------------
+
+	int label;
+
+	void invokeSuspend() {
+		switch (label) {
+			case 0: {
+				url = buildUrl();
+
+				download(url); // suspend function
+				return;
+			}
+			case 1: {
+				toast("File is downloaded: " + url);
+				return;
+			}
+		}
+	}
+
+
+
+//-----------------------------------------
+
+	int label;
+
+	void invokeSuspend() {
+		switch (label) {
+			case 0: {
+				url = buildUrl();
+				label = 1;
+
+				download(url); // suspend function
+				return;
+			}
+			case 1: {
+				toast("File is downloaded: " + url);
+				return;
+			}
+		}
+	}
+
+
+	//-----------------------------------------
+
+
+
+	int label;
+
+	void invokeSuspend() {
+		switch (label) {
+			case 0: {
+				url = buildUrl();
+				label = 1;
+
+				download(url, this); // suspend function
+				return;
+			}
+			case 1: {
+				toast("File is downloaded: " + url);
+				return;
+			}
+		}
+	}
+
+
+	//-----------------------------------------
+
+
+
+	File file;
+
+	void invokeSuspend(Object result) {
+		switch (label) {
+			case 0: {
+				url = buildUrl();
+				label = 1;
+
+				download(url, this); // suspend function
+				return;
+			}
+			case 1: {
+				file = (File) result;
+				toast("File is downloaded: " + url);
+				label = 2;
+
+				unzip(file, this); // suspend function
+				return;
+			}
+			case 2: {
+				toast("File is unzipped");
+				return;
+			}
+		}
+	}
+
+

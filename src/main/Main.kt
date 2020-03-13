@@ -2,20 +2,18 @@ package main
 
 import kotlinx.coroutines.*
 
-fun main() = runBlocking {
+fun main() = runBlocking<Unit> {
 
     val suspendFunction = SuspendFunction()
-
-
-
-    suspendFunction.base()
-
-
-
-
-//    //не наследуется контекст, нужно передавать параметром
 //    val context = CoroutineName("test")
-//
+
+
+
+//    suspendFunction.base()
+
+
+
+
 //    val job : Job = GlobalScope.launch(context) {
 //        println("1. Running in ${coroutineContext[CoroutineName]}")
 //
@@ -24,7 +22,16 @@ fun main() = runBlocking {
 //    }
 
 
-//        suspendFunction.contexChanging()
+
+
+//    suspendFunction.contextChanging()
+    suspendFunction.printThreadName(coroutineContext)
+
+
+
+
+
+
 
 
 //    println("1. Running in ${Thread.currentThread().id}")
@@ -53,9 +60,25 @@ fun main() = runBlocking {
 
 
 
-
 //    suspendFunction.getName()
 
 
-    Thread.sleep(5000)
+
+
+//    suspendFunction.showFlow(coroutineContext)
+
+
+
+//    suspendFunction.showVolatile(coroutineContext)
+
+
+
+
+
+
+
+
+
+
+//    Thread.sleep(5000)
 }

@@ -3,13 +3,17 @@ package main
 import jdk.nashorn.internal.codegen.CompilerConstants
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.lang.Exception
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.*
+import kotlin.system.measureTimeMillis
 
 class SuspendFunction {
 
@@ -66,6 +70,9 @@ class SuspendFunction {
         job.join() //(4)
     }
 
+
+
+
     suspend fun getMessage() : String {
         delay(1000);
         return "Hello world!"
@@ -88,24 +95,46 @@ class SuspendFunction {
 
 
 //смена thread pool
-    suspend fun contexChanging() {
+    suspend fun contextChanging() {
 
-        val job: Job = GlobalScope.launch(Dispatchers.IO) {
-            println("1. Running in ${Thread.currentThread().id}")
+        val job: Job = GlobalScope.launch() {
+            println("1. Running in ${Thread.currentThread().name}")
 
-            val data = withContext(Dispatchers.Default) {
-                println("2. Running in ${Thread.currentThread().id}")
+            val data = withContext(Dispatchers.Unconfined) {
+                println("2. Running in ${Thread.currentThread().name}")
                 customSuspendedFun2()
             }
 
-            println("4. Running in ${Thread.currentThread().id}")
+            println("4. Running in ${Thread.currentThread().name}")
         }
     }
 
     suspend fun customSuspendedFun2() {
         delay(1000)
-        println("3. Running in ${Thread.currentThread().id}")
+        println("3. Running in ${Thread.currentThread().name}")
     }
+
+
+
+
+
+
+    fun printThreadName(coroutineContext: CoroutineContext) = CoroutineScope(coroutineContext).launch {
+//sampleStart
+        launch { // context of the parent, main runBlocking coroutine
+            println("main runBlocking      : I'm working in thread ${Thread.currentThread().name}")
+        }
+        launch(Dispatchers.Unconfined) { // not confined -- will work with main thread
+            println("Unconfined            : I'm working in thread ${Thread.currentThread().name}")
+        }
+        launch(Dispatchers.Default) { // will get dispatched to DefaultDispatcher
+            println("Default               : I'm working in thread ${Thread.currentThread().name}")
+        }
+        launch(newSingleThreadContext("MyOwnThread")) { // will get its own new thread
+            println("newSingleThreadContext: I'm working in thread ${Thread.currentThread().name}")
+        }
+    }
+//sampleEnd
 
 
 
@@ -355,7 +384,7 @@ class SuspendFunction {
 
 
 
-    //работа с сетевыми запросами с использованием библиотеки Retrofit (cont: Continuation / cont: CancellableContinuation)
+    //работа с сетевыми запросами с использованием библиотеки Retrofit2 (cont: Continuation / cont: CancellableContinuation)
     suspend fun <T> Call<T>.await(): T = suspendCoroutine { cont ->
         this.enqueue(object: Callback<T> {
 
@@ -381,6 +410,87 @@ class SuspendFunction {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //sampleStart
+    fun foo(): Flow<Int> = flow { // flow builder
+        for (i in 1..5) {
+            delay(100) // pretend we are doing something useful here
+            emit(i) // emit next value
+        }
+    }
+
+    fun showFlow(cont: CoroutineContext) = CoroutineScope(cont).launch {
+        // Launch a concurrent coroutine to check if the main thread is blocked
+        launch {
+            for (k in 1..3) {
+                println("I'm not blocked $k")
+                delay(100)
+            }
+        }
+        // Collect the flow
+        foo().collect { any -> println(any) }
+    }
+//sampleEnd
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    a thread-safe (aka synchronized, linearizable, or atomic) data structure that provides all the necessarily synchronization
+//    var counter = AtomicInteger()
+
+
+    //sampleStart
+    suspend fun massiveRun(action: suspend () -> Unit) {
+        val n = 100  // number of coroutines to launch
+        val k = 1000 // times an action is repeated by each coroutine
+        val time = measureTimeMillis {
+            coroutineScope { // scope for coroutines
+                repeat(n) {
+                    launch {
+                        repeat(k) { action() }
+                    }
+                }
+            }
+        }
+        println("Completed ${n * k} actions in $time ms")
+    }
+
+    //sampleStart
+    @Volatile // in Kotlin `volatile` is an annotation
+    var counter = 0
+
+    fun showVolatile(cont: CoroutineContext) = CoroutineScope(cont).launch {
+        withContext(Dispatchers.Default) {
+            massiveRun {
+                counter++
+            }
+        }
+        println("Counter = $counter")
+    }
+//sampleEnd
 
 
 
